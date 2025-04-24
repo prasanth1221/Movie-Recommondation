@@ -5,12 +5,16 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 # Set up page
-st.set_page_config(page_title="🎬 Smart Movie Recommender", layout="wide")
+st.set_page_config(
+    page_title="🎬 CineMatcher", 
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
 
 # Load data
 @st.cache_data
 def load_data():
-    base_path = os.path.dirname(__file__)  # This gets the current directory of the app.py file
+    base_path = os.path.dirname(__file__)
     movies = pd.read_csv(os.path.join(base_path, 'archive (5)', 'movies.csv'))
     ratings = pd.read_csv(os.path.join(base_path, 'archive (5)', 'ratings.csv'))
     return movies, ratings
@@ -22,7 +26,7 @@ movie_stats = ratings.groupby('movieId')['rating'].agg(['mean', 'count']).reset_
 movie_stats.columns = ['movieId', 'avg_rating', 'rating_count']
 movies = movies.merge(movie_stats, on='movieId', how='left')
 movies['avg_rating'] = movies['avg_rating'].round(2)
-movies['genres'] = movies['genres'].str.replace('|', ' ', regex=False)
+movies['genres'] = movies['genres'].str.replace('|', ', ', regex=False)
 
 # TF-IDF Matrix
 tfidf = TfidfVectorizer(stop_words='english')
@@ -33,8 +37,8 @@ cosine_sim = cosine_similarity(tfidf_matrix)
 def hybrid_score(sim_scores, movies_df):
     result = []
     for idx, score in sim_scores:
-        rating_count = movies_df.iloc[idx]['rating_count']
-        avg_rating = movies_df.iloc[idx]['avg_rating']
+        rating_count = movies_df.iloc[idx]['rating_count'] if not pd.isna(movies_df.iloc[idx]['rating_count']) else 0
+        avg_rating = movies_df.iloc[idx]['avg_rating'] if not pd.isna(movies_df.iloc[idx]['avg_rating']) else 0
         popularity_boost = (rating_count / 1000) + avg_rating
         result.append((idx, score * popularity_boost))
     return sorted(result, key=lambda x: x[1], reverse=True)
@@ -50,65 +54,182 @@ def recommend_movie(title):
     movie_indices = [i[0] for i in sim_scores]
     return movies[['title', 'genres', 'avg_rating', 'rating_count']].iloc[movie_indices]
 
-# UI
-with st.container():
-    # Header
-    st.markdown("<h1 style='text-align: center; font-size: 36px; color: #4CAF50;'>🎬 Smart Movie Recommender</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; font-size: 18px; color: #555;'>Select a movie and get top 5 similar recommendations based on genres, ratings, and popularity!</p>", unsafe_allow_html=True)
-    
-    # Create two columns for better UI layout
-    col1, col2 = st.columns([2, 3])
-
-    # Movie selection
-    with col1:
-        st.markdown("<h3 style='font-size: 24px;'>Choose a Movie:</h3>", unsafe_allow_html=True)
-        movie_list = sorted(movies['title'].unique())
-        selected_movie = st.selectbox("", movie_list, index=100)
-
-        if st.button("🔍 Recommend Movies", use_container_width=True):
-            recommendations = recommend_movie(selected_movie)
-            if recommendations.empty:
-                st.error("No recommendations found. Please try another movie.", icon="🚫")
-            else:
-                st.success(f"🎯 Top 5 movies similar to **{selected_movie}**", icon="✨")
-                st.dataframe(recommendations.reset_index(drop=True), use_container_width=True)
-
-    # Display image and remove the previous image
-    with col2:
-        # Removed the image as per your request
-        pass
-
-    # Add footer with a simple note
-    st.markdown("<hr>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; font-size: 14px; color: #777;'>Created Prasanthkumar | Powered by Streamlit & Scikit-Learn</p>", unsafe_allow_html=True)
-
-# Additional Custom CSS for better visual appearance
+# Apply custom CSS
 st.markdown("""
-    <style>
+<style>
+    /* Global styles */
     .stApp {
-        background-color: #f5f5f5;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        color: #e6e6e6;
     }
-    .stButton>button {
-        background-color: #4CAF50;
-        color: black;
-        font-weight: bold;
-        font-size: 16px;
-        border-radius: 5px;
-        padding: 10px 30px;
-        transition: background-color 0.3s;
-    }
-    .stButton>button:hover {
-        background-color: #45a049;
-    }
-    .stSelectbox>div>div>div {
-        padding: 10px;
-        background-color: #ffffff;
-        border-radius: 8px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    }
-    .stDataFrame {
+    
+    /* Header styles */
+    .title-container {
+        text-align: center;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        background: rgba(0, 0, 0, 0.3);
         border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     }
-    </style>
+    
+    .title {
+        font-family: 'Helvetica Neue', sans-serif;
+        font-weight: 700;
+        font-size: 3rem;
+        margin-bottom: 0.5rem;
+        color: #ff6b6b;
+    }
+    
+    .subtitle {
+        font-family: 'Helvetica Neue', sans-serif;
+        font-weight: 300;
+        color: #e6e6e6;
+        font-size: 1.2rem;
+    }
+    
+    /* Card styles */
+    .card {
+        background: rgba(26, 26, 46, 0.8);
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        margin-bottom: 1rem;
+        border-left: 4px solid #ff6b6b;
+    }
+    
+    /* Button styles */
+    .stButton>button {
+        background: linear-gradient(90deg, #ff6b6b 0%, #ff8e8e 100%);
+        color: #1a1a2e;
+        font-weight: 600;
+        border: none;
+        border-radius: 30px;
+        padding: 0.8rem 2rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+    }
+    
+    .stButton>button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 7px 20px rgba(255, 107, 107, 0.6);
+    }
+    
+    /* Select box styles */
+    .stSelectbox>div {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+    }
+    
+    .stSelectbox>div>div>div {
+        color: #e6e6e6;
+    }
+    
+    /* Results table */
+    .results-container {
+        background: rgba(26, 26, 46, 0.7);
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+    
+    .stDataFrame {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+    }
+    
+    /* Star rating */
+    .star-rating {
+        color: #ffcb6b;
+        font-size: 1.2rem;
+    }
+    
+    /* Movie card */
+    .movie-card {
+        display: flex;
+        background: rgba(22, 33, 62, 0.7);
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        border-left: 4px solid #ff6b6b;
+    }
+    
+    .movie-info {
+        padding: 1rem;
+    }
+    
+    .movie-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: #ff6b6b;
+        margin-bottom: 0.5rem;
+    }
+    
+    .movie-genres {
+        font-size: 0.9rem;
+        color: #a0a0a0;
+        margin-bottom: 0.5rem;
+    }
+    
+    .movie-rating {
+        display: flex;
+        align-items: center;
+        font-size: 0.9rem;
+    }
+    
+    .rating-value {
+        font-weight: 600;
+        color: #ffcb6b;
+        margin-right: 0.5rem;
+    }
+    
+    .rating-count {
+        color: #a0a0a0;
+        font-size: 0.8rem;
+    }
+    
+    /* Footer */
+    .footer {
+        text-align: center;
+        padding: 1.5rem 0;
+        color: #a0a0a0;
+        font-size: 0.9rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        margin-top: 2rem;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .title {
+            font-size: 2.5rem;
+        }
+    }
+</style>
 """, unsafe_allow_html=True)
+
+# Header
+st.markdown('<div class="title-container">', unsafe_allow_html=True)
+st.markdown('<h1 class="title">🎬 CineMatcher</h1>', unsafe_allow_html=True)
+st.markdown('<p class="subtitle">Discover your next favorite movie with our smart recommendation engine</p>', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
+
+# Main content
+col1, col2 = st.columns([1, 2])
+
+with col1:
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown('<h3>Find Your Next Movie</h3>', unsafe_allow_html=True)
+    
+    # Movie selection
+    movie_list = sorted(movies['title'].unique())
+    selected_movie = st.selectbox("Select a movie you enjoyed", movie_list, index=100)
+    
+    # Get movie details
+    selected_movie_info = movies[movies['title'] == selected_movie].iloc[0]
+    
+    # Display selected movie details
+    st.markdown(f"""
+    <div class="movie-card">
+        <div class="movie-info">
+            <div class="movie-title">{selected_movie}

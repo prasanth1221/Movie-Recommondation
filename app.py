@@ -11,8 +11,8 @@ st.set_page_config(page_title="🎬 Smart Movie Recommender", layout="wide")
 @st.cache_data
 def load_data():
     base_path = os.path.dirname(__file__)
-    movies = pd.read_csv(os.path.join(base_path, '/acrhive (5)/movies.csv'))
-    ratings = pd.read_csv(os.path.join(base_path, '/acrhive (5)/ratings.csv'))
+    movies = pd.read_csv('/acrhive (5)/movies.csv')
+    ratings = pd.read_csv('/acrhive (5)/ratings.csv')
     return movies, ratings
 
 movies, ratings = load_data()

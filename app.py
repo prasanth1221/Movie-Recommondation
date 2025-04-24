@@ -53,7 +53,7 @@ def recommend_movie(title):
 # UI
 with st.container():
     # Header
-    st.markdown("<h1 style='text-align: center; font-size: 48px; color: #FF6347;'>🎥 Smart Movie Recommender</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; font-size: 36px; color: #4CAF50;'>🎬 Smart Movie Recommender</h1>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center; font-size: 18px; color: #555;'>Select a movie and get top 5 similar recommendations based on genres, ratings, and popularity!</p>", unsafe_allow_html=True)
     
     # Create two columns for better UI layout
@@ -73,22 +73,23 @@ with st.container():
                 st.success(f"🎯 Top 5 movies similar to **{selected_movie}**", icon="✨")
                 st.dataframe(recommendations.reset_index(drop=True), use_container_width=True)
 
-    # Display movie image
+    # Display image and remove the previous image
     with col2:
-        st.image("https://cdn-icons-png.flaticon.com/512/744/744922.png", width=250)
+        # Removed the image as per your request
+        pass
 
-    # Add footer
+    # Add footer with a simple note
     st.markdown("<hr>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center; font-size: 14px; color: #777;'>Created by Your Name | Powered by Streamlit & Scikit-Learn</p>", unsafe_allow_html=True)
 
 # Additional Custom CSS for better visual appearance
 st.markdown("""
     <style>
-    .css-1d391kg {
-        font-family: 'Arial', sans-serif;
+    .stApp {
+        background-color: #f5f5f5;
     }
     .stButton>button {
-        background-color: #FF6347;
+        background-color: #4CAF50;
         color: white;
         font-weight: bold;
         font-size: 16px;
@@ -97,11 +98,11 @@ st.markdown("""
         transition: background-color 0.3s;
     }
     .stButton>button:hover {
-        background-color: #e5533d;
+        background-color: #45a049;
     }
     .stSelectbox>div>div>div {
         padding: 10px;
-        background-color: #f4f4f4;
+        background-color: #ffffff;
         border-radius: 8px;
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     }

@@ -80,7 +80,7 @@ with st.container():
 
     # Add footer with a simple note
     st.markdown("<hr>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; font-size: 14px; color: #777;'>Created by Your Name | Powered by Streamlit & Scikit-Learn</p>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; font-size: 14px; color: #777;'>Created Prasanthkumar | Powered by Streamlit & Scikit-Learn</p>", unsafe_allow_html=True)
 
 # Additional Custom CSS for better visual appearance
 st.markdown("""
@@ -90,7 +90,7 @@ st.markdown("""
     }
     .stButton>button {
         background-color: #4CAF50;
-        color: white;
+        color: black;
         font-weight: bold;
         font-size: 16px;
         border-radius: 5px;

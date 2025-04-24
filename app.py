@@ -8,14 +8,12 @@ from sklearn.metrics.pairwise import cosine_similarity
 st.set_page_config(page_title="🎬 Smart Movie Recommender", layout="wide")
 
 # Load data
-
 @st.cache_data
 def load_data():
     base_path = os.path.dirname(__file__)  # This gets the current directory of the app.py file
     movies = pd.read_csv(os.path.join(base_path, 'archive (5)', 'movies.csv'))
     ratings = pd.read_csv(os.path.join(base_path, 'archive (5)', 'ratings.csv'))
     return movies, ratings
-
 
 movies, ratings = load_data()
 
@@ -54,22 +52,62 @@ def recommend_movie(title):
 
 # UI
 with st.container():
-    st.markdown("<h1 style='text-align: center;'>🎥 Smart Movie Recommender</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center;'>Select a movie and get top 5 similar recommendations based on genres, ratings, and popularity!</p>", unsafe_allow_html=True)
-
+    # Header
+    st.markdown("<h1 style='text-align: center; font-size: 48px; color: #FF6347;'>🎥 Smart Movie Recommender</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; font-size: 18px; color: #555;'>Select a movie and get top 5 similar recommendations based on genres, ratings, and popularity!</p>", unsafe_allow_html=True)
+    
+    # Create two columns for better UI layout
     col1, col2 = st.columns([2, 3])
 
+    # Movie selection
     with col1:
+        st.markdown("<h3 style='font-size: 24px;'>Choose a Movie:</h3>", unsafe_allow_html=True)
         movie_list = sorted(movies['title'].unique())
-        selected_movie = st.selectbox("Choose a movie you like:", movie_list)
+        selected_movie = st.selectbox("", movie_list, index=100)
 
-        if st.button("🔍 Recommend Movies"):
+        if st.button("🔍 Recommend Movies", use_container_width=True):
             recommendations = recommend_movie(selected_movie)
             if recommendations.empty:
-                st.error("No recommendations found. Please try another movie.")
+                st.error("No recommendations found. Please try another movie.", icon="🚫")
             else:
-                st.success(f"🎯 Top 5 movies similar to **{selected_movie}**")
+                st.success(f"🎯 Top 5 movies similar to **{selected_movie}**", icon="✨")
                 st.dataframe(recommendations.reset_index(drop=True), use_container_width=True)
 
+    # Display movie image
     with col2:
-        st.image("https://cdn-icons-png.flaticon.com/512/744/744922.png", width=300)
+        st.image("https://cdn-icons-png.flaticon.com/512/744/744922.png", width=250)
+
+    # Add footer
+    st.markdown("<hr>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center; font-size: 14px; color: #777;'>Created by Your Name | Powered by Streamlit & Scikit-Learn</p>", unsafe_allow_html=True)
+
+# Additional Custom CSS for better visual appearance
+st.markdown("""
+    <style>
+    .css-1d391kg {
+        font-family: 'Arial', sans-serif;
+    }
+    .stButton>button {
+        background-color: #FF6347;
+        color: white;
+        font-weight: bold;
+        font-size: 16px;
+        border-radius: 5px;
+        padding: 10px 30px;
+        transition: background-color 0.3s;
+    }
+    .stButton>button:hover {
+        background-color: #e5533d;
+    }
+    .stSelectbox>div>div>div {
+        padding: 10px;
+        background-color: #f4f4f4;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    .stDataFrame {
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+    </style>
+""", unsafe_allow_html=True)

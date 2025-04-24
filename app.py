@@ -229,7 +229,4 @@ with col1:
     selected_movie_info = movies[movies['title'] == selected_movie].iloc[0]
     
     # Display selected movie details
-    st.markdown(f"""
-    <div class="movie-card">
-        <div class="movie-info">
-            <div class="movie-title">{selected_movie}
+    st.markdown(f"""<div class="movie-card"><div class="movie-info"><div class="movie-title">{selected_movie}

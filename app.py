@@ -3,8 +3,8 @@ import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-movies = pd.read_csv(r'D:\edgroom\recommondationSysytem\archive (5)\movies.csv')
-ratings = pd.read_csv(r'D:\edgroom\recommondationSysytem\archive (5)\ratings.csv')
+movies = pd.read_csv('archive (5)/movies.csv')
+ratings = pd.read_csv('archive (5)/ratings.csv')
 
 movie_stats = ratings.groupby('movieId')['rating'].agg(['mean', 'count']).reset_index()
 movie_stats.columns = ['movieId', 'avg_rating', 'rating_count']

@@ -228,5 +228,108 @@ with col1:
     # Get movie details
     selected_movie_info = movies[movies['title'] == selected_movie].iloc[0]
     
-    # Display selected movie details
-    st.markdown(f"""<div class="movie-card"><div class="movie-info"><div class="movie-title">{selected_movie}
+    # Display selected movie details - Fixed the unterminated f-string issue
+    st.markdown(f"""
+    <div class="movie-card">
+        <div class="movie-info">
+            <div class="movie-title">{selected_movie}</div>
+            <div class="movie-genres">{selected_movie_info['genres']}</div>
+            <div class="movie-rating">
+                <span class="rating-value">⭐ {selected_movie_info['avg_rating'] if not pd.isna(selected_movie_info['avg_rating']) else 'No rating'}</span>
+                <span class="rating-count">({int(selected_movie_info['rating_count']) if not pd.isna(selected_movie_info['rating_count']) else 'No'} ratings)</span>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Recommendation button
+    if st.button("Get Recommendations", use_container_width=True):
+        with st.spinner("Finding perfect matches for you..."):
+            recommendations = recommend_movie(selected_movie)
+        
+        if recommendations.empty:
+            st.error("No recommendations found. Please try another movie.", icon="🚫")
+        else:
+            st.success(f"Here are movies similar to **{selected_movie}**", icon="✨")
+            
+            # Display recommendations
+            for _, movie in recommendations.iterrows():
+                st.markdown(f"""
+                <div class="movie-card">
+                    <div class="movie-info">
+                        <div class="movie-title">{movie['title']}</div>
+                        <div class="movie-genres">{movie['genres']}</div>
+                        <div class="movie-rating">
+                            <span class="rating-value">⭐ {movie['avg_rating'] if not pd.isna(movie['avg_rating']) else 'No rating'}</span>
+                            <span class="rating-count">({int(movie['rating_count']) if not pd.isna(movie['rating_count']) else 'No'} ratings)</span>
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                
+    st.markdown('</div>', unsafe_allow_html=True)
+
+with col2:
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown('<h3>How It Works</h3>', unsafe_allow_html=True)
+    
+    # Create tabs for the explanation
+    tab1, tab2, tab3 = st.tabs(["About", "Features", "Technology"])
+    
+    with tab1:
+        st.markdown("""
+        **CineMatcher** is an intelligent movie recommendation system that helps you discover new films 
+        based on your preferences. Simply select a movie you enjoyed, and our algorithm will find similar 
+        films that match your taste.
+        
+        Our recommendations are based on a combination of:
+        - Genre similarity
+        - User ratings
+        - Movie popularity
+        """)
+    
+    with tab2:
+        st.markdown("""
+        ✨ **Smart Recommendations** - Get personalized movie suggestions based on what you like
+        
+        🔍 **Genre Matching** - Find films with similar themes and styles
+        
+        ⭐ **Rating-Based** - Recommendations include highly-rated films that other users have enjoyed
+        
+        🎯 **Popularity Boost** - Discover both hidden gems and popular hits
+        """)
+    
+    with tab3:
+        st.markdown("""
+        CineMatcher uses advanced machine learning techniques to provide the best recommendations:
+        
+        - **TF-IDF Vectorization** - Converts movie genres into numerical vectors
+        - **Cosine Similarity** - Measures how similar movies are to each other
+        - **Hybrid Scoring** - Combines content-based similarity with popularity metrics
+        - **Optimized Algorithms** - Fast processing for quick recommendations
+        """)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# Top movies stats (optional section)
+with st.expander("Explore Movie Statistics"):
+    top_movies = movies.sort_values('rating_count', ascending=False).head(10)
+    
+    st.markdown("<h4>Most Popular Movies</h4>", unsafe_allow_html=True)
+    for _, movie in top_movies.iterrows():
+        st.markdown(f"""
+        <div class="movie-card" style="margin-bottom: 0.5rem">
+            <div class="movie-info">
+                <div class="movie-title">{movie['title']}</div>
+                <div class="movie-rating">
+                    <span class="rating-value">⭐ {movie['avg_rating'] if not pd.isna(movie['avg_rating']) else 'No rating'}</span>
+                    <span class="rating-count">({int(movie['rating_count']) if not pd.isna(movie['rating_count']) else 'No'} ratings)</span>
+                </div>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+# Footer
+st.markdown('<div class="footer">', unsafe_allow_html=True)
+st.markdown('Created by Prasanthkumar | Powered by Streamlit & Scikit-Learn', unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)

@@ -125,22 +125,23 @@ st.markdown("""
         color: #e6e6e6;
     }
     
-    /* Results container */
-    .recommendations-container {
-        background: rgba(22, 33, 62, 0.8);
+    /* Results table */
+    .results-container {
+        background: rgba(26, 26, 46, 0.7);
         border-radius: 15px;
         padding: 1.5rem;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-        margin-top: 1.5rem;
-        border-left: 4px solid #4CAF50;
     }
     
-    .recommendations-title {
-        font-weight: 600;
+    .stDataFrame {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+    }
+    
+    /* Star rating */
+    .star-rating {
+        color: #ffcb6b;
         font-size: 1.2rem;
-        color: #4CAF50;
-        margin-bottom: 1rem;
-        text-align: center;
     }
     
     /* Movie card */
@@ -156,7 +157,6 @@ st.markdown("""
     
     .movie-info {
         padding: 1rem;
-        width: 100%;
     }
     
     .movie-title {
@@ -189,39 +189,6 @@ st.markdown("""
         font-size: 0.8rem;
     }
     
-    /* Recommended movie cards - full width with better styling */
-    .recommendation-card {
-        background: rgba(22, 33, 62, 0.9);
-        border-radius: 10px;
-        overflow: hidden;
-        margin-bottom: 0.8rem;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-        border-left: 4px solid #4CAF50;
-        padding: 1rem;
-        display: flex;
-        align-items: center;
-    }
-    
-    .recommendation-number {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #4CAF50;
-        margin-right: 1rem;
-        min-width: 40px;
-        text-align: center;
-    }
-    
-    .recommendation-info {
-        flex-grow: 1;
-    }
-    
-    .recommendation-title {
-        font-weight: 600;
-        font-size: 1.1rem;
-        color: #ff6b6b;
-        margin-bottom: 0.3rem;
-    }
-    
     /* Footer */
     .footer {
         text-align: center;
@@ -247,7 +214,7 @@ st.markdown('<h1 class="title">🎬 CineMatcher</h1>', unsafe_allow_html=True)
 st.markdown('<p class="subtitle">Discover your next favorite movie with our smart recommendation engine</p>', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-# Main content - First layout for selection
+# Main content
 col1, col2 = st.columns([1, 2])
 
 with col1:
@@ -261,7 +228,7 @@ with col1:
     # Get movie details
     selected_movie_info = movies[movies['title'] == selected_movie].iloc[0]
     
-    # Display selected movie details
+    # Display selected movie details - Fixed the unterminated f-string issue
     st.markdown(f"""
     <div class="movie-card">
         <div class="movie-info">
@@ -276,7 +243,30 @@ with col1:
     """, unsafe_allow_html=True)
     
     # Recommendation button
-    recommend_button = st.button("Get Recommendations", use_container_width=True)
+    if st.button("Get Recommendations", use_container_width=True):
+        with st.spinner("Finding perfect matches for you..."):
+            recommendations = recommend_movie(selected_movie)
+        
+        if recommendations.empty:
+            st.error("No recommendations found. Please try another movie.", icon="🚫")
+        else:
+            st.success(f"Here are movies similar to **{selected_movie}**", icon="✨")
+            
+            # Display recommendations
+            for _, movie in recommendations.iterrows():
+                st.markdown(f"""
+                <div class="movie-card">
+                    <div class="movie-info">
+                        <div class="movie-title">{movie['title']}</div>
+                        <div class="movie-genres">{movie['genres']}</div>
+                        <div class="movie-rating">
+                            <span class="rating-value">⭐ {movie['avg_rating'] if not pd.isna(movie['avg_rating']) else 'No rating'}</span>
+                            <span class="rating-count">({int(movie['rating_count']) if not pd.isna(movie['rating_count']) else 'No'} ratings)</span>
+                        </div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+                
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col2:
@@ -320,38 +310,6 @@ with col2:
         """)
     
     st.markdown('</div>', unsafe_allow_html=True)
-
-# Full-width recommendations section - only appears when recommendations are made
-if recommend_button:
-    with st.spinner("Finding perfect matches for you..."):
-        recommendations = recommend_movie(selected_movie)
-    
-    if recommendations.empty:
-        st.error("No recommendations found. Please try another movie.", icon="🚫")
-    else:
-        # Full-width container for recommendations
-        st.markdown("""
-        <div class="recommendations-container">
-            <div class="recommendations-title">✨ Top Recommendations for You</div>
-        """, unsafe_allow_html=True)
-        
-        # Display recommendations with ranking numbers
-        for i, (_, movie) in enumerate(recommendations.iterrows(), 1):
-            st.markdown(f"""
-            <div class="recommendation-card">
-                <div class="recommendation-number">{i}</div>
-                <div class="recommendation-info">
-                    <div class="recommendation-title">{movie['title']}</div>
-                    <div class="movie-genres">{movie['genres']}</div>
-                    <div class="movie-rating">
-                        <span class="rating-value">⭐ {movie['avg_rating'] if not pd.isna(movie['avg_rating']) else 'No rating'}</span>
-                        <span class="rating-count">({int(movie['rating_count']) if not pd.isna(movie['rating_count']) else 'No'} ratings)</span>
-                    </div>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        st.markdown("</div>", unsafe_allow_html=True)
 
 # Top movies stats (optional section)
 with st.expander("Explore Movie Statistics"):
